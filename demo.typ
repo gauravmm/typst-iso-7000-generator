@@ -1,4 +1,4 @@
-#import "src/lib.typ": iso-7000
+#import "library/src/lib.typ": iso-7000
 
 = ISO 7000 Symbols for Typst
 
