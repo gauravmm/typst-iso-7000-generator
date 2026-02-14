@@ -18,6 +18,12 @@ export default {
         },
       },
     },
+    'convertShapeToPath',
+    'convertEllipseToCircle',
+    'convertStyleToAttrs',
+    'removeUselessStrokeAndFill',
+    'removeXMLNS',
+    'removeDimensions',
   ],
 
 };
