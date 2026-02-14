@@ -1,6 +1,6 @@
 # Typst ISO 7000 Icon Generator
 
-Generator for the [typst-iso-7000](https://github.com/gauravmm/typst-iso-7000) Typst package. This tool scrapes ISO 7000 symbol SVGs from Wikimedia Commons, cleans and optimizes them, and outputs them into the library for use as a Typst package.
+Generator for the [Adequate ISO 7000 Icons](https://github.com/gauravmm/typst-iso-7000) Typst package. This tool scrapes ISO 7000 symbol SVGs from Wikimedia Commons, cleans and optimizes them, and outputs them into the library for use as a Typst package.
 
 The generator is **deterministic** -- given the same cached source data, it will always produce identical output. The repository ships with all the files necessary to generate and update the library, including cached Wikimedia metadata and raw SVGs in `sources/`.
 

@@ -1,7 +1,6 @@
 import logging
 from pathlib import Path
 from lxml import etree
-from scour import scour
 
 
 def cleanup_svg(path: Path, output: Path):
@@ -12,7 +11,7 @@ def cleanup_svg(path: Path, output: Path):
     root = tree.getroot()
 
     # Remove all elements and attributes with non-svg namespaces
-    for elem in root.xpath(".|.//*"):
+    for elem in root.xpath(".|.//*"):  # type: ignore
         # QName(elem).namespace returns the URI
         if etree.QName(elem).namespace != "http://www.w3.org/2000/svg" or etree.QName(
             elem
@@ -46,32 +45,21 @@ def cleanup_svg(path: Path, output: Path):
 
     # Remove gray stroke elements using XPath
     # Remove <defs> elements
-    for elem in root.xpath(".//defs"):
+    for elem in root.xpath(".//defs"):  # type: ignore
         elem.getparent().remove(elem)
 
     # Remove <g> and <path> elements with gray strokes (#999 or #999999)
     for elem_type in ("g", "path"):
         for elem in root.xpath(
             f".//*[local-name()='{elem_type}'][contains(@stroke, '#999')]"
-        ):
+        ):  # type: ignore
             elem.getparent().remove(elem)
 
         # Remove <g> and <path> elements with #999 in style attribute
         for elem in root.xpath(
             f".//*[local-name()='{elem_type}'][contains(@style, '#999')]"
-        ):
+        ):  # type: ignore
             elem.getparent().remove(elem)
-
-    # Repeatedly remove orphan <g> elements (groups with no element children)
-    while True:
-        # Find all <g> elements with no child elements (only text/whitespace allowed)
-        orphans = root.xpath(".//*[local-name()='g'][not(*)]")
-        if not orphans:
-            break
-        for elem in orphans:
-            parent = elem.getparent()
-            if parent is not None:
-                parent.remove(elem)
 
     # Handle viewBox and root size (width/height)
     width = root.get("width")
@@ -85,39 +73,29 @@ def cleanup_svg(path: Path, output: Path):
                 f"{path}: Neither viewBox nor size attributes found, skipping..."
             )
             return
-    # Case 1: viewBox set, but not root size → set root size to 10mm x 10mm
-    elif not viewBox:
-        # Case 2: root size set, but not viewBox → set viewBox
-        try:
-            # Parse numeric values from width/height (strip units like px, mm, etc.)
-            root.set("viewBox", f"0 0 {float(width)} {float(height)}")
-        except ValueError:
-            logging.error(
-                f"{path}: Could not parse width/height ({width}, {height}), skipping..."
-            )
-            return
-    # Case 3: both are set → keep viewBox, set size to 10mm
+        else:
+            # Case 1: viewBox set, but not root size → do nothing
+            pass
+    else:
+        if not viewBox:
+            # Case 2: root size set, but not viewBox → set viewBox, clear root size
+            try:
+                # Parse numeric values from width/height (strip units like px, mm, etc.)
+                root.set("viewBox", f"0 0 {float(width)} {float(height)}")
+            except ValueError:
+                logging.error(
+                    f"{path}: Could not parse width/height ({width}, {height}), skipping..."
+                )
+                return
+        else:
+            # Case 3: both are set → keep viewBox, clear root size
+            pass
 
-    root.set("width", "10mm")
-    root.set("height", "10mm")
+        del root.attrib["width"]
+        del root.attrib["height"]
 
     # Convert tree to string for scour processing
     svg_data = etree.tostring(
         tree, xml_declaration=True, encoding="UTF-8", pretty_print=False
     ).decode("utf-8")
-
-    # Get scour options and customize
-    scour_options = scour.sanitizeOptions(options=None)
-    scour_options.remove_metadata = True
-    scour_options.strip_xml_prolog = True
-    scour_options.indent_type = "none"
-    scour_options.enable_viewboxing = True
-    scour_options.enable_id_stripping = True
-    scour_options.enable_comment_stripping = True
-    scour_options.shorten_ids = True
-
-    # Process the SVG with scour
-    clean_svg_data = scour.scourString(svg_data, options=scour_options)
-
-    # Write the optimized SVG to output
-    output.write_text(clean_svg_data, encoding="utf-8")
+    output.write_text(svg_data)

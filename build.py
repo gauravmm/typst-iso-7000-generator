@@ -22,7 +22,7 @@ SOURCES = Path("sources/").resolve()
 CACHE_WIKIMEDIA = SOURCES / "wikimedia.json.gz"
 CACHE_SVG = SOURCES / "raw"
 PROCESSED_JSON = SOURCES / "icons.json"
-PROCESSED_SVG = Path("library/src/icons/")
+PROCESSED_SVG = SOURCES / Path("processed")
 
 
 def get_wikimedia():
