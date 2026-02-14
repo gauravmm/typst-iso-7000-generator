@@ -4,13 +4,21 @@ export default {
     indent: 4, // number
     pretty: false, // boolean
   },
+  floatPrecision: 1,
   plugins: [
-    'preset-default', // built-in plugins enabled by default
-  ],
-  params: {
-    overrides: {
-      removeViewBox: false, // Prevents removing the viewBox
+    {
+      name: 'preset-default',
+      params: {
+        overrides: {
+          convertColors: {
+            shortHex: true,
+          },
+          convertPathData: { applyTransforms: true },
+          convertTransform: true,
+          removeXMLNS: true,
+        },
+      },
     },
-  },
+  ],
 
 };
