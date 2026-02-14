@@ -233,7 +233,7 @@ def main(args):
     download_svgs(symbols)
 
     for s in tqdm(symbols, desc="Processing SVGs", unit=" files"):
-        process_svg(s, args.force_process)
+        process_svg(s, force_process=args.force_process)
 
     # Produce output for the reference document:
     PROCESSED_JSON.write_text(json.dumps([dataclasses.asdict(s) for s in symbols]))

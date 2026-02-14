@@ -1,6 +1,9 @@
 import logging
+import re
 from pathlib import Path
 from lxml import etree
+
+TRANSLATE_RE = re.compile(r"^\s*translate\(\s*([^,\s]+)\s*[,\s]\s*([^)]+)\s*\)\s*$")
 
 
 def cleanup_svg(path: Path, output: Path):
@@ -93,6 +96,28 @@ def cleanup_svg(path: Path, output: Path):
 
         del root.attrib["width"]
         del root.attrib["height"]
+
+    # Absorb translate transforms into the viewBox origin.
+    # Inkscape SVGs have <g transform="translate(tx, ty)"> wrapping all content.
+    # Shifting the viewBox origin by (-tx, -ty) removes the transform while
+    # preserving rendering. The viewBox will have a non-zero origin.
+    vb = root.get("viewBox")
+    if vb:
+        children = [c for c in root if isinstance(c.tag, str)]
+        if len(children) == 1 and etree.QName(children[0]).localname == "g":
+            g = children[0]
+            m = TRANSLATE_RE.match(g.get("transform", ""))
+            if m:
+                try:
+                    tx, ty = float(m.group(1)), float(m.group(2))
+                except ValueError:
+                    tx = ty = None
+                if tx is not None and ty is not None:
+                    parts = vb.split()
+                    if len(parts) == 4:
+                        min_x, min_y, vw, vh = (float(p) for p in parts)
+                        root.set("viewBox", f"{min_x - tx} {min_y - ty} {vw} {vh}")
+                        del g.attrib["transform"]
 
     # Convert tree to string for scour processing
     svg_data = etree.tostring(

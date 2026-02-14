@@ -31,11 +31,8 @@ function setViewBox(svg, minX, minY, width, height) {
 async function processSvg(inputPath, targetWidth, targetHeight, outputPath) {
   const raw = await readFile(inputPath, "utf-8");
 
-  // Convert shapes to paths
-  const pathed = raw; // await pathThatSvg(raw);
-
   // Parse existing viewBox
-  const vb = parseViewBox(pathed);
+  const vb = parseViewBox(raw);
   if (!vb || vb.width === 0 || vb.height === 0) {
     console.error(`Skipping ${inputPath}: no valid viewBox found`);
     return;
@@ -45,11 +42,16 @@ async function processSvg(inputPath, targetWidth, targetHeight, outputPath) {
   const scaleX = targetWidth / vb.width;
   const scaleY = targetHeight / vb.height;
 
-  // Scale the SVG content
-  const scaled = await scale(pathed, { scale: scaleX, scaleY });
+  // Scale the SVG content. scale-that-svg scales path d data and viewBox
+  // width/height, but leaves the viewBox origin untouched. We need to scale
+  // the origin ourselves to keep paths aligned with the viewBox window.
+  const scaled = await scale(raw, { scale: scaleX, scaleY });
 
-  // Update viewBox to target dimensions
-  const result = setViewBox(scaled, 0, 0, targetWidth, targetHeight);
+  // Set final viewBox: scale the origin to match the scaled path coordinates,
+  // preserving the relationship between viewBox window and content.
+  const scaledMinX = vb.minX * scaleX;
+  const scaledMinY = vb.minY * scaleY;
+  const result = setViewBox(scaled, scaledMinX, scaledMinY, targetWidth, targetHeight);
 
   await writeFile(outputPath, result, "utf-8");
   console.log(`Processed: ${inputPath} -> ${outputPath}`);
