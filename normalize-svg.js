@@ -32,7 +32,7 @@ async function processSvg(inputPath, targetWidth, targetHeight, outputPath) {
   const raw = await readFile(inputPath, "utf-8");
 
   // Convert shapes to paths
-  const pathed = await pathThatSvg(raw);
+  const pathed = raw; // await pathThatSvg(raw);
 
   // Parse existing viewBox
   const vb = parseViewBox(pathed);

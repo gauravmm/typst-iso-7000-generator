@@ -8,4 +8,4 @@ uv run build.py
 node normalize-svg.js -W 100 -H 100 sources/processed/*.svg
 
 # Step 3: Optimize with SVGO (in-place)
-npx svgo --config svgo.config.mjs -f sources/processed -o sources/processed
+npx svgo --config svgo.config.mjs -f sources/processed/ -o sources/processed

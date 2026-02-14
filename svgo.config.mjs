@@ -15,10 +15,10 @@ export default {
           },
           convertPathData: { applyTransforms: true },
           convertTransform: true,
-          removeXMLNS: true,
         },
       },
     },
+    "removeXMLNS",
   ],
 
 };
