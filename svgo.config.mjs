@@ -13,11 +13,14 @@ export default {
           convertColors: {
             shortHex: true,
           },
-          convertPathData: { applyTransforms: true },
           convertTransform: true,
+          convertPathData: {
+            applyTransforms: true,
+          },
         },
       },
     },
+    'convertShapeToPath',
   ],
 
 };
