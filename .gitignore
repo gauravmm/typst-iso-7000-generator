@@ -1,8 +1,12 @@
 # Generated files
+test/
 *.pdf
 sources/*.json
 sources/raw/*.svg
 sources/processed/*.svg
+
+# Node
+node_modules/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
